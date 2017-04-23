@@ -65,9 +65,9 @@ case node[:platform]
       package pkg
     }
 
-    package "mysql" if node.platform_version.to_i == 6
+    package "mysql" if node['platform_version'].to_i == 6
 
-    if node.platform_version.to_i == 7
+    if node['platform_version'].to_i == 7
       %w{mariadb-server mariadb}.each { |pkg|
         package pkg
       }
@@ -82,7 +82,7 @@ case node[:platform]
     end
 
     file "#{node.apache.docroot_dir}/index.html" do
-      content "This is #{node.hostname}"
+      content "This is #{node['hostname']}"
       owner "apache"
       group "apache"
       mode 0644
@@ -247,7 +247,7 @@ projects[drupal][patch][1697570] = http://drupal.org/files/drupal7.menu-system.1
 
     web_app "vhosts" do
       server_name node.application_attributes.my_domain
-      server_aliases [node.fqdn, node.hostname]
+      server_aliases [node['fqdn'], node['hostname']]
       docroot node.apache.docroot_dir
       cookbook "mu-demo"
       allow_override "All"

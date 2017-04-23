@@ -23,7 +23,7 @@ include_recipe "apache2::mod_expires"
 include_recipe "apache2::mod_deflate"
 include_recipe "apache2::mod_filter"
 
-case node.platform
+case node['platform']
   when "centos", "redhat"
     execute "iptables -I INPUT -p tcp --dport 80 -j ACCEPT && service iptables save" do
       not_if "iptables -nL | egrep '^ACCEPT.*dpt:80($| )'"
@@ -40,11 +40,11 @@ case node.platform
       owner "apache"
       variables(
           :domain_name => node.application_attributes.my_domain,
-          :hostname => node.hostname,
+          :hostname => node['hostname'],
           :drupal_distro => node.application_attributes.drupal_distro,
           :mu_admins => node.deployment.admins,
           :tomcat_app => node.application_attributes.tomcat_app,
-          :os_type => "#{node.platform} #{node.platform_version.to_i}"
+          :os_type => "#{node['platform']} #{node['platform_version'].to_i}"
       )
     end
 
@@ -56,7 +56,7 @@ case node.platform
 
     web_app "proxy" do
       server_name node.application_attributes.my_domain
-      server_aliases [node.fqdn, node.hostname]
+      server_aliases [node['fqdn'], node['hostname']]
       cookbook "mu-demo"
       allow_override "All"
       template "proxy.conf.erb"
@@ -69,7 +69,7 @@ case node.platform
 
     web_app "vhosts" do
       server_name node.application_attributes.my_domain
-      server_aliases [node.fqdn, node.hostname]
+      server_aliases [node['fqdn'], node['hostname']]
       docroot node.apache.docroot_dir
       cookbook "mu-demo"
       allow_override "All"
@@ -79,5 +79,5 @@ case node.platform
       base_dir node.apache.dir
     end
   else
-    Chef::Log.info("Unsupported platform #{node.platform}")
+    Chef::Log.info("Unsupported platform #{node['platform']}")
 end

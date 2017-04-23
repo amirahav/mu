@@ -120,7 +120,7 @@ if !node['update_nagios_only']
       node.normal['ad']['node_type'] = "domain_node"
       node.normal['ad']['domain_operation'] = "join"
       node.normal['ad']['domain_name'] = $MU_CFG['ldap']['domain_name']
-      search_domains << node.normal['ad']['domain_name']
+      search_domains << node['ad']['domain_name']
       node.normal['ad']['netbios_name'] = $MU_CFG['ldap']['domain_netbios_name']
       node.normal['ad']['dcs'] = $MU_CFG['ldap']['dcs']
       node.normal['ad']['domain_join_vault'] = $MU_CFG['ldap']['join_creds']['vault']

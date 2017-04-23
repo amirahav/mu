@@ -46,7 +46,7 @@ else
   default["nagios"]["server_name"] = node['hostname']
   default['nagios']['server']['server_alias'] = $MU_CFG['public_address']
 end
-#default['nagios']['server']['server_alias'] = node.fqdn+", "+node.hostname+", "+node['local_hostname']+", "+node['local_ipv4']+", "+node['public_hostname']+", "+node['public_ipv4']
+#default['nagios']['server']['server_alias'] = node['fqdn']+", "+node['hostname']+", "+node['local_hostname']+", "+node['local_ipv4']+", "+node['public_hostname']+", "+node['public_ipv4']
 default["nagios"]["log_dir"] = "/var/log/httpd"
 default['nagios']['cgi-bin'] = "/usr/lib/cgi-bin/"
 default['nagios']['cgi-path'] = "/nagios/cgi-bin/"

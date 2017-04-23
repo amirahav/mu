@@ -17,8 +17,8 @@
 # limitations under the License.
 #
 disk_name_str = Chef::Config[:node_name]
-if disk_name_str == "CAP-MASTER" or disk_name_str == "MU-MASTER" and !node.hostname.nil?
-  disk_name_str = node.hostname
+if disk_name_str == "CAP-MASTER" or disk_name_str == "MU-MASTER" and !node['hostname'].nil?
+  disk_name_str = node['hostname']
 end rescue NoMethodError
 
 default['os_updates_using_chef'] = false
@@ -52,10 +52,10 @@ if node.has_key?("deployment")
 end
 
 if (!node.has_key?("admins") or node['admins'].size == 0) and node['tags'].is_a?(Hash)
-  if node.tags.has_key?("MU-OWNER")
+  if node['tags'].has_key?("MU-OWNER")
     default['admins'] = []
     default['admins'] << node['tags']['MU-OWNER']+"@localhost"
-  elsif node.tags.has_key?("MU-ADMINS")
+  elsif node['tags'].has_key?("MU-ADMINS")
     default['admins'] = node['tags']['MU-ADMINS'].split(/\s+/)
   end
 end

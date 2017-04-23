@@ -39,12 +39,12 @@ if !node[:application_attributes][:skip_recipes].include?('split_var_partitions'
 # XXX would rather exec this inside a resource, guard it, etc
         mommacat_request("add_volume", params)
   
-        if node.platform_version.to_i == 6
+        if node['platform_version'].to_i == 6
           execute "mkfs.ext4 #{node[:application_attributes][volume][:mount_device]}" do
             not_if "tune2fs -l #{node[:application_attributes][volume][:mount_device]}"
             notifies :run, "execute[reboot for /var]", :delayed
           end
-        elsif node.platform_version.to_i == 7
+        elsif node['platform_version'].to_i == 7
           execute "mkfs.xfs -i size=512 #{node[:application_attributes][volume][:mount_device]}" do
             not_if "xfs_info #{node[:application_attributes][volume][:mount_device]}"
             notifies :run, "execute[reboot for /var]", :delayed
@@ -61,7 +61,7 @@ if !node[:application_attributes][:skip_recipes].include?('split_var_partitions'
         end
       }
   
-      if node.platform_version.to_i == 7
+      if node['platform_version'].to_i == 7
         # Copying var on a live system, should refactor mu-migrate-var-partitions to work on CentOS7
         execute "cd /var && tar -cpf - . | ( cd /mnt/var && tar -xvpf - )" do
           only_if "df -h | grep /dev/xvdo | grep /mnt/var"
@@ -87,7 +87,7 @@ if !node[:application_attributes][:skip_recipes].include?('split_var_partitions'
         end
       end
   
-      if node.platform_version.to_i == 6
+      if node['platform_version'].to_i == 6
         # CentOS 7 seems to be freaking out on this, even when changing fstab to xfs and UUID
         package "lsof"
   
