@@ -1,4 +1,4 @@
-$LocalHostName <%= node['name'] %>
+$LocalHostName <%= node.name %>
 
 <% if !node['deployment'].nil? and !node['deployment']['mu_public_ip'].nil? %>
 # certificate files - just CA for a client

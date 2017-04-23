@@ -79,7 +79,7 @@ nrpe_host << node['ipaddress'] if nrpe_host.empty?
 default['nrpe']['allowed_hosts'] = nrpe_host.uniq
 
 # No idea why this is set wrong by default
-default['chef_node_name'] = node['name']
+default['chef_node_name'] = node.name
 default['nagios']['host_name_attribute'] = 'chef_node_name'
 
 default['application_attributes']['logs']['volume_size_gb'] = 50
