@@ -4,7 +4,7 @@ maintainer_email 'mu-developers@googlegroups.com'
 license 'All rights reserved'
 description 'Installs/Configures mu-jenkins'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version '0.5.0'
+version '0.6.0'
 depends 'java'
 depends 'jenkins', '~> 5.0'
 depends 'chef-vault'

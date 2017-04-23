@@ -14,10 +14,6 @@ siteCookbookPath = "#{ENV['MU_COOKBOOK_ROOT']}/site_cookbooks"
 source "https://supermarket.chef.io"
 
 cookbook 'mu-splunk', path: "#{cookbookPath}/mu-splunk"
-cookbook 'freebsd', '~> 0.1.9'
-cookbook 'gunicorn', '~> 1.1.2'
-cookbook 'logrotate', '~> 1.9.2'
-cookbook 'memcached', '~> 1.7.2'
 cookbook 'mu-activedirectory', path: "#{cookbookPath}/mu-activedirectory"
 cookbook 'mu-demo', path: "#{cookbookPath}/mu-demo"
 cookbook 'mu-firewall', path: "#{cookbookPath}/mu-firewall"
@@ -33,6 +29,4 @@ cookbook 'mysql-chef_gem', path: "#{cookbookPath}/mysql-chef_gem"
 cookbook 'nagios', git: 'https://github.com/schubergphilis/nagios.git', ref: '9c470edcdcc9b4f1715e4bf6ad453f6c67cb90cd'
 cookbook 'nginx-passenger', path: "#{cookbookPath}/nginx-passenger"
 cookbook 'python', path: "#{cookbookPath}/python"
-cookbook 'runit', '~> 1.7'
 cookbook 's3fs', path: "#{cookbookPath}/s3fs"
-cookbook 'zipfile', '~> 0.1.0'
