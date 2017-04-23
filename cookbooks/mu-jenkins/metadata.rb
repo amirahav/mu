@@ -6,6 +6,6 @@ description 'Installs/Configures mu-jenkins'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version '0.5.0'
 depends 'java'
-depends 'jenkins', '~> 4.1.2'
+depends 'jenkins', '~> 5.0'
 depends 'chef-vault'
 depends 'mu-utility'

@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+override['chef-vault']['version'] = "~> 3.0.2"
+
 default['mu']['user_map'] = MU::Master.listUsers
-default['mu']['user_list'] = []
-node.mu.user_map.each_pair { |user, data|
-  node.default.mu.user_list << "#{user} (#{data['email']})"
+
+mu_user_list = []
+node['mu']['user_map'].each_pair { |user, data|
+  mu_user_list << "#{user} (#{data['email']})"
 }
+default['mu']['user_list'] = mu_user_list
 
 default['apache']['docroot_dir'] = "/var/www/html"
 default['apache']['default_site_enabled'] = false
@@ -39,7 +43,7 @@ end
 if !$MU_CFG['public_address'].match(/^\d+\.\d+\.\d+\.\d+$/)
   default["nagios"]["server_name"] = $MU_CFG['public_address']
 else
-  default["nagios"]["server_name"] = node.hostname
+  default["nagios"]["server_name"] = node['hostname']
   default['nagios']['server']['server_alias'] = $MU_CFG['public_address']
 end
 #default['nagios']['server']['server_alias'] = node.fqdn+", "+node.hostname+", "+node['local_hostname']+", "+node['local_ipv4']+", "+node['public_hostname']+", "+node['public_ipv4']
@@ -71,24 +75,24 @@ default['nagios']['url'] = default["nagios"]["server_name"]
 nrpe_host = []
 nrpe_host << MU.my_public_ip if MU.my_public_ip
 nrpe_host << MU.my_private_ip if MU.my_private_ip
-nrpe_host << node.ipaddress if nrpe_host.empty?
+nrpe_host << node['ipaddress'] if nrpe_host.empty?
 default['nrpe']['allowed_hosts'] = nrpe_host.uniq
 
 # No idea why this is set wrong by default
-default['chef_node_name'] = node.name
+default['chef_node_name'] = node['name']
 default['nagios']['host_name_attribute'] = 'chef_node_name'
 
 default['application_attributes']['logs']['volume_size_gb'] = 50
 default['application_attributes']['logs']['mount_device'] = "/dev/xvdl"
-default['application_attributes']['logs']['label'] = "#{node.hostname} /Mu_Logs"
+default['application_attributes']['logs']['label'] = "#{node['hostname']} /Mu_Logs"
 default['application_attributes']['logs']['secure_location'] = MU.adminBucketName
 default['application_attributes']['logs']['ebs_keyfile'] = "log_vol_ebs_key"
 default['application_attributes']['logs']['mount_directory'] = "/Mu_Logs"
 
-case node.platform
+case node['platform']
   when "centos"
-    ssh_user = "root" if node.platform_version.to_i == 6
-    ssh_user = "centos" if node.platform_version.to_i == 7
+    ssh_user = "root" if node['platform_version'].to_i == 6
+    ssh_user = "centos" if node['platform_version'].to_i == 7
   when "redhat"
     ssh_user = "ec2-user"
 end

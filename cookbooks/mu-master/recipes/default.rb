@@ -40,7 +40,7 @@ firewall_rule "Chef Server default ports" do
   port [4321, 7443, 9463, 16379, 8983, 8000, 9683, 9090, 5432, 5672]
 end
 
-if !node.update_nagios_only
+if !node['update_nagios_only']
 
   service "sshd" do
     action :nothing
@@ -114,24 +114,24 @@ if !node.update_nagios_only
   #    end
 
     elsif $MU_CFG['ldap']['type'] == "Active Directory"
-      node.normal.ad = {}
-      node.normal.ad.computer_name = "MU-MASTER"
-      node.normal.ad.node_class = "mumaster"
-      node.normal.ad.node_type = "domain_node"
-      node.normal.ad.domain_operation = "join"
-      node.normal.ad.domain_name = $MU_CFG['ldap']['domain_name']
-      search_domains << node.normal.ad.domain_name
-      node.normal.ad.netbios_name = $MU_CFG['ldap']['domain_netbios_name']
-      node.normal.ad.dcs = $MU_CFG['ldap']['dcs']
-      node.normal.ad.domain_join_vault = $MU_CFG['ldap']['join_creds']['vault']
-      node.normal.ad.domain_join_item = $MU_CFG['ldap']['join_creds']['item']
-      node.normal.ad.domain_join_username_field = $MU_CFG['ldap']['join_creds']['username_field']
-      node.normal.ad.domain_join_password_field = $MU_CFG['ldap']['join_creds']['password_field']
-      if !node.application_attributes.sshd_allow_groups.match(/(^|\s)#{$MU_CFG['ldap']['user_group_name']}(\s|$)/i)
-        node.normal.application_attributes.sshd_allow_groups = node.application_attributes.sshd_allow_groups+" "+$MU_CFG['ldap']['user_group_name'].downcase
+      node.normal['ad'] = {}
+      node.normal['ad']['computer_name'] = "MU-MASTER"
+      node.normal['ad']['node_class'] = "mumaster"
+      node.normal['ad']['node_type'] = "domain_node"
+      node.normal['ad']['domain_operation'] = "join"
+      node.normal['ad']['domain_name'] = $MU_CFG['ldap']['domain_name']
+      search_domains << node.normal['ad']['domain_name']
+      node.normal['ad']['netbios_name'] = $MU_CFG['ldap']['domain_netbios_name']
+      node.normal['ad']['dcs'] = $MU_CFG['ldap']['dcs']
+      node.normal['ad']['domain_join_vault'] = $MU_CFG['ldap']['join_creds']['vault']
+      node.normal['ad']['domain_join_item'] = $MU_CFG['ldap']['join_creds']['item']
+      node.normal['ad']['domain_join_username_field'] = $MU_CFG['ldap']['join_creds']['username_field']
+      node.normal['ad']['domain_join_password_field'] = $MU_CFG['ldap']['join_creds']['password_field']
+      if !node['application_attributes']['sshd_allow_groups'].match(/(^|\s)#{$MU_CFG['ldap']['user_group_name']}(\s|$)/i)
+        node.normal['application_attributes']['sshd_allow_groups'] = node['application_attributes']['sshd_allow_groups']+" "+$MU_CFG['ldap']['user_group_name'].downcase
       end
       node.save
-      log "'#{node.ad.domain_join_vault}' '#{node.ad.domain_join_item}' '#{node.ad.domain_join_username_field}' '#{node.ad.domain_join_password_field}'"
+      log "'#{node['ad']['domain_join_vault']}' '#{node['ad']['domain_join_item']}' '#{node['ad']['domain_join_username_field']}' '#{node['ad']['domain_join_password_field']}'"
       include_recipe "mu-activedirectory::domain-node"
     end
   end
@@ -161,13 +161,13 @@ if !node.update_nagios_only
   # remove it if we've got a version bump coming down the pike.
   execute "remove old Nagios binary" do
     command "rm -f /usr/sbin/nagios"
-    not_if "/usr/sbin/nagios -V | grep 'Nagios Core #{node.nagios.server.version}'"
+    not_if "/usr/sbin/nagios -V | grep 'Nagios Core #{node['nagios']['server']['version']}'"
   end
 end
 
 include_recipe "mu-master::update_nagios_only"
 
-if !node.update_nagios_only
+if !node['update_nagios_only']
   package "nagios-plugins-all"
 
   directory "/home/nagios" do
@@ -204,13 +204,13 @@ if !node.update_nagios_only
   template "/etc/dhcp/dhclient-eth0.conf" do
     source "dhclient-eth0.conf.erb"
     mode 0644
-    notifies :restart, "service[network]", :immediately unless %w{redhat centos}.include?(node.platform) && node.platform_version.to_i == 7
+    notifies :restart, "service[network]", :immediately unless %w{redhat centos}.include?(node['platform']) && node['platform_version'].to_i == 7
     variables(
       :search_domains => search_domains
     )
   end
 
-  svrname = node.hostname
+  svrname = node['hostname']
   if !$MU_CFG['public_address'].match(/^\d+\.\d+\.\d+\.\d+$/)
     svrname = $MU_CFG['public_address']
   end
@@ -236,7 +236,7 @@ if !node.update_nagios_only
 
   web_app "mu_docs" do
     server_name svrname
-    server_aliases [node.fqdn, node.hostname, node['local_hostname'], node['local_ipv4'], node['public_hostname'], node['public_ipv4']]
+    server_aliases [node['fqdn'], node['hostname'], node['local_hostname'], node['local_ipv4'], node['public_hostname'], node['public_ipv4']]
     docroot "/var/www/html"
     cookbook "mu-master"
     notifies :reload, "service[apache2]", :delayed
@@ -244,7 +244,7 @@ if !node.update_nagios_only
   web_app "https_proxy" do
     server_name svrname
     server_port "443"
-    server_aliases [node.fqdn, node.hostname, node['local_hostname'], node['local_ipv4'], node['public_hostname'], node['public_ipv4']]
+    server_aliases [node['fqdn'], node['hostname'], node['local_hostname'], node['local_ipv4'], node['public_hostname'], node['public_ipv4']]
     docroot "/var/www/html"
     cookbook "mu-master"
     notifies :reload, "service[apache2]", :delayed
@@ -271,11 +271,11 @@ if !node.update_nagios_only
 
   # Use a real hostname for mail if we happen to have one assigned
   if !MU.mu_public_addr.match(/^\d+\.\d+\.\d+\.\d+$/)
-    node.normal.postfix.main.myhostname = MU.mu_public_addr
-    node.normal.postfix.main.mydomain = MU.mu_public_addr.sub(/^.*?([^\.]+\.[^\.]+)$/, '\1')
-    node.normal.postfix.main.myorigin = MU.mu_public_addr.sub(/^.*?([^\.]+\.[^\.]+)$/, '\1')
+    node.normal['postfix']['main']['myhostname'] = MU.mu_public_addr
+    node.normal['postfix']['main']['mydomain'] = MU.mu_public_addr.sub(/^.*?([^\.]+\.[^\.]+)$/, '\1')
+    node.normal['postfix']['main']['myorigin'] = MU.mu_public_addr.sub(/^.*?([^\.]+\.[^\.]+)$/, '\1')
   end
-  node.normal.postfix.main.inet_interfaces = "all"
+  node.normal['postfix']['main']['inet_interfaces'] = "all"
   node.save
 
   file "/etc/motd" do
@@ -292,7 +292,7 @@ if !node.update_nagios_only
 
  Mu metadata are stored in #{MU.mainDataDir}
 
- Users: #{node.mu.user_list.join(", ")}
+ Users: #{node['mu']['user_list'].join(", ")}
 
 *******************************************************************************
 
@@ -322,7 +322,7 @@ if !node.update_nagios_only
     not_if "grep '^devnull: /dev/null$' /etc/aliases"
   end
 
-  node.mu.user_map.each_pair { |mu_user, data|
+  node['mu']['user_map'].each_pair { |mu_user, data|
     execute "echo '#{mu_user}: #{data['email']}' >> /etc/aliases" do
       not_if "grep '^#{mu_user}: #{data['email']}$' /etc/aliases"
     end
@@ -336,12 +336,12 @@ if !node.update_nagios_only
     extend CAPVolume
     block do
       require 'aws-sdk-core'
-      if !File.open("/etc/mtab").read.match(/ #{node.application_attributes.logs.mount_directory} /) and !volume_attached(node.application_attributes.logs.mount_device)
+      if !File.open("/etc/mtab").read.match(/ #{node['application_attributes']['logs']['mount_directory']} /) and !volume_attached(node['application_attributes']['logs']['mount_device'])
         create_node_volume("logs")
         result = attach_node_volume("logs")
       end
     end
-    not_if "grep #{node.application_attributes.logs.mount_directory} /etc/mtab"
+    not_if "grep #{node['application_attributes']['logs']['mount_directory']} /etc/mtab"
     notifies :restart, "service[rsyslog]", :delayed
   end
 
@@ -350,8 +350,8 @@ if !node.update_nagios_only
   ruby_block "mount_logs_volume" do
     extend CAPVolume
     block do
-      if !File.open("/etc/mtab").read.match(/ #{node.application_attributes.logs.mount_directory} /)
-        ebs_keyfile = node.application_attributes.logs.ebs_keyfile
+      if !File.open("/etc/mtab").read.match(/ #{node['application_attributes']['logs']['mount_directory']} /)
+        ebs_keyfile = node['application_attributes']['logs']['ebs_keyfile']
         temp_dev = "/dev/ram7"
         temp_mount = "/tmp/ram7"
 
@@ -363,7 +363,7 @@ if !node.update_nagios_only
         s3 = Aws::S3::Client.new
 
         begin
-          resp = s3.get_object(bucket: node.application_attributes.logs.secure_location, key: "log_vol_ebs_key")
+          resp = s3.get_object(bucket: node['application_attributes']['logs']['secure_location'], key: "log_vol_ebs_key")
         rescue Exception => e
           Chef::Log.info(e.inspect)
           destroy_temp_disk(temp_dev)
@@ -372,7 +372,7 @@ if !node.update_nagios_only
 
         if resp.body.nil? or resp.body.size == 0
           destroy_temp_disk(temp_dev)
-          raise "Couldn't fetch log volume key #{node.application_attributes.logs.secure_location}:/log_vol_ebs_key"
+          raise "Couldn't fetch log volume key #{node['application_attributes']['logs']['secure_location']}:/log_vol_ebs_key"
         end
 
         ebs_key_handle = File.new("#{temp_mount}/log_vol_ebs_key", File::CREAT|File::TRUNC|File::RDWR, 0400)
@@ -383,21 +383,21 @@ if !node.update_nagios_only
       end
     end
     notifies :restart, "service[rsyslog]", :delayed
-    not_if "grep #{node.application_attributes.logs.mount_directory} /etc/mtab"
+    not_if "grep #{node['application_attributes']['logs']['mount_directory']} /etc/mtab"
   end
 
-  ruby_block "label #{node.application_attributes.logs.mount_device} as #{node.application_attributes.logs.label}" do
+  ruby_block "label #{node['application_attributes']['logs']['mount_device']} as #{node['application_attributes']['logs']['label']}" do
     extend CAPVolume
     block do
-      tags = [{key: "Name", value: node.application_attributes.logs.label}]
-      tag_volume(node.application_attributes.logs.mount_device, tags)
+      tags = [{key: "Name", value: node['application_attributes']['logs']['label']}]
+      tag_volume(node['application_attributes']['logs']['mount_device'], tags)
     end
   end rescue NoMethodError
 
-  ruby_block "label /dev/sda1 as #{node.hostname} /" do
+  ruby_block "label /dev/sda1 as #{node['hostname']} /" do
     extend CAPVolume
     block do
-      tags = [{key: "Name", value: "#{node.hostname} /"}]
+      tags = [{key: "Name", value: "#{node['hostname']} /"}]
       tag_volume("/dev/sda1", tags)
     end
   end rescue NoMethodError
