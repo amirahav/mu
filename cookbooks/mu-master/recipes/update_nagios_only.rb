@@ -134,9 +134,16 @@ if File.exist?("/usr/lib64/nagios/plugins/check_nagios")
 end
 
 # execute "chgrp apache /var/log/nagios"
-["/etc/nagios/conf.d/", "/etc/nagios/*.cfg", "/var/run/nagios.pid"].each { |dir|
+["/etc/nagios/conf.d/", "/etc/nagios/*.cfg"].each { |dir|
   execute "/sbin/restorecon -R #{dir}" do
     not_if "ls -aZ #{dir} | grep ':nagios_etc_t:'"
+  end
+}
+
+["/var/run/nagios.pid", "/var/run/nagios/nagios.pid"].each { |f|
+  execute "/sbin/restorecon -R #{f}" do
+    not_if "ls -aZ #{f} | grep ':nagios_etc_t:'"
+    only_if "test -f #{f}"
   end
 }
 
