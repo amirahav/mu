@@ -34,49 +34,49 @@ case node['platform']
       notifies :reload, "service[apache2]", :delayed
     end
 
-    template "#{node.apache.docroot_dir}/index.html" do
+    template "#{node['apache']['docroot_dir']}/index.html" do
       source "proxyindex.html.erb"
       mode 0644
       owner "apache"
       variables(
-          :domain_name => node.application_attributes.my_domain,
+          :domain_name => node['application_attributes']['my_domain'],
           :hostname => node['hostname'],
-          :drupal_distro => node.application_attributes.drupal_distro,
-          :mu_admins => node.deployment.admins,
-          :tomcat_app => node.application_attributes.tomcat_app,
+          :drupal_distro => node['application_attributes']['drupal_distro'],
+          :mu_admins => node['deployment']['admins'],
+          :tomcat_app => node['application_attributes']['tomcat_app'],
           :os_type => "#{node['platform']} #{node['platform_version'].to_i}"
       )
     end
 
-    cookbook_file "#{node.apache.docroot_dir}/tiered_apps_demo_diagram.png" do
+    cookbook_file "#{node['apache']['docroot_dir']}/tiered_apps_demo_diagram.png" do
       source "tiered_apps_demo_diagram.png"
       mode 0644
       owner "apache"
     end
 
     web_app "proxy" do
-      server_name node.application_attributes.my_domain
+      server_name node['application_attributes']['my_domain']
       server_aliases [node['fqdn'], node['hostname']]
       cookbook "mu-demo"
       allow_override "All"
       template "proxy.conf.erb"
-      version node.apache.version
-      win_apps node.winapps
-      win_lb_url node.deployment.loadbalancers.winlb.dns
-      lnx_lb_url node.deployment.loadbalancers.lnxlb.dns
-      lnx_apps node.linux_apps
+      version node['apache']['version']
+      win_apps node['winapps']
+      win_lb_url node['deployment']['loadbalancers']['winlb']['dns']
+      lnx_lb_url node['deployment']['loadbalancers']['lnxlb']['dns']
+      lnx_apps node['linux_apps']
     end
 
     web_app "vhosts" do
-      server_name node.application_attributes.my_domain
+      server_name node['application_attributes']['my_domain']
       server_aliases [node['fqdn'], node['hostname']]
-      docroot node.apache.docroot_dir
+      docroot node['apache']['docroot_dir']
       cookbook "mu-demo"
       allow_override "All"
       template "proxyvhosts.conf.erb"
-      version node.apache.version
-      log_dir node.apache.log_dir
-      base_dir node.apache.dir
+      version node['apache']['version']
+      log_dir node['apache']['log_dir']
+      base_dir node['apache']['dir']
     end
   else
     Chef::Log.info("Unsupported platform #{node['platform']}")
