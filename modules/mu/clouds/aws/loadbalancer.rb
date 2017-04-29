@@ -659,7 +659,7 @@ module MU
                 end
                 next
               end
-            rescue Aws::ElasticLoadBalancing::Errors::LoadBalancerNotFound
+            rescue Aws::ElasticLoadBalancing::Errors::LoadBalancerNotFound, Aws::ElasticLoadBalancingV2::Errors::LoadBalancerNotFound
               MU.log "ELB #{lb.load_balancer_name} already deleted", MU::WARN
             end
           }
