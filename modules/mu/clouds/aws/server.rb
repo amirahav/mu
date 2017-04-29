@@ -699,19 +699,19 @@ module MU
               if retries % 3 == 0
                 MU.log "Waiting for EC2 instance #{node} to be ready...", MU::NOTICE
               end
-              sleep 40
+              sleep 5
               # Get a fresh AWS descriptor
               instance = MU::Cloud::Server.find(cloud_id: @cloud_id, region: @config['region']).values.first
             end
           rescue Aws::EC2::Errors::ServiceError => e
-            if retries < 20
+            if retries < 160
               MU.log "Got #{e.inspect} during initial instance creation of #{@cloud_id}, retrying...", MU::NOTICE, details: instance
               retries = retries + 1
               retry
             else
               raise MuError, "Too many retries creating #{node} (#{e.inspect})"
             end
-          end while instance.nil? or (instance.state.name != "running" and retries < 30)
+          end while instance.nil? or (instance.state.name != "running" and retries < 240)
 
           punchAdminNAT
 
@@ -998,8 +998,8 @@ module MU
             notify
           end
 
-          windows? ? ssh_wait = 60 : ssh_wait = 30
-          windows? ? max_retries = 50 : max_retries = 35
+          windows? ? ssh_wait = 60 : ssh_wait = 5
+          windows? ? max_retries = 50 : max_retries = 210
           begin
             session = getSSHSession(max_retries, ssh_wait)
             initialSSHTasks(session)

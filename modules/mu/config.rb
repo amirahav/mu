@@ -5419,12 +5419,16 @@ module MU
                     "type" => "string",
                     "enum" => ["HTTP", "HTTPS", "TCP", "SSL"],
                     "description" => "Specifies the protocol to use for routing traffic to back-end instances - HTTP, HTTPS, TCP, or SSL. This property cannot be modified for the life of the load balancer.
-
-            If the front-end protocol is HTTP or HTTPS, InstanceProtocol has to be at the same protocol layer, i.e., HTTP or HTTPS. Likewise, if the front-end protocol is TCP or SSL, InstanceProtocol has to be TCP or SSL."
+                                              If the front-end protocol is HTTP or HTTPS, InstanceProtocol has to be at the same protocol layer, i.e., HTTP or HTTPS. Likewise, if the front-end protocol is TCP or SSL, InstanceProtocol has to be TCP or SSL."
                   },
                   "ssl_certificate_name" => {
                     "type" => "string",
                     "description" => "The name of a server certificate."
+                  },
+                  "ssl_policy" => {
+                    "type" => "string",
+                    "description" => "The name of the SSL/TLS policy to apply to an HTTPS listner. eg ELBSecurityPolicy-2015-05, ELBSecurityPolicy-2016-08, ELBSecurityPolicy-TLS-1-2-2017-01, ELBSecurityPolicy-TLS-1-1-2017-01",
+                    "default" => "ELBSecurityPolicy-TLS-1-1-2017-01"
                   },
                   "ssl_certificate_id" => {
                     "type" => "string",
@@ -5449,7 +5453,7 @@ module MU
                               "field" => {
                                 "type" => "string",
                                 "default" => "path-pattern",
-                                "enum" => ["path-pattern"]
+                                "enum" => ["path-pattern", "host-header"]
                               },
                               "values" => {
                                 "type" => "array",

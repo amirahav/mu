@@ -237,38 +237,38 @@ module MU
           end
 
           if !@config['classic']
-            @config["listeners"].each { |l|
-              if !@targetgroups.has_key?(l['targetgroup'])
-                raise MuError, "Listener in #{@mu_name} configured for target group #{l['targetgroup']}, but I don't have data on a targetgroup by that name"
+            @config["listeners"].each { |listener|
+              if !@targetgroups.has_key?(listener['targetgroup'])
+                raise MuError, "Listener in #{@mu_name} configured for target group #{listener['targetgroup']}, but I don't have data on a targetgroup by that name"
               end
               listen_descriptor = {
                 :default_actions => [{
-                  :target_group_arn => @targetgroups[l['targetgroup']].target_group_arn,
+                  :target_group_arn => @targetgroups[listener['targetgroup']].target_group_arn,
                   :type => "forward"
                 }], 
                 :load_balancer_arn => lb.load_balancer_arn,
-                :port => l['lb_port'], 
-                :protocol => l['lb_protocol']
+                :port => listener['lb_port'], 
+                :protocol => listener['lb_protocol']
               }
-              if l['ssl_certificate_id']
+              if listener['ssl_certificate_id']
                 listen_descriptor[:certificates] = [{
-                  :certificate_arn => l['ssl_certificate_id']
+                  :certificate_arn => listener['ssl_certificate_id']
                 }]
-                listen_descriptor[:ssl_policy] = "ELBSecurityPolicy-2015-05"
+                listen_descriptor[:ssl_policy] = listener['ssl_policy']
               end
               listen_resp = MU::Cloud::AWS.elb2.create_listener(listen_descriptor).listeners.first
-              if !l['rules'].nil?
-                l['rules'].each { |rule|
+              if !listener['rules'].nil?
+                listener['rules'].each { |rule|
                   rule_descriptor = {
                     :listener_arn => listen_resp.listener_arn,
                     :priority => rule['order'],
                     :conditions => rule['conditions'],
                     :actions => []
                   }
-                  rule['actions'].each { |a|
+                  rule['actions'].each { |action|
                     rule_descriptor[:actions] << {
                       :target_group_arn => @targetgroups[a['targetgroup']].target_group_arn,
-                      :type => a['action']
+                      :type => action['action']
                     }
                   }
                   MU::Cloud::AWS.elb2.create_rule(rule_descriptor)
@@ -277,9 +277,9 @@ module MU
             }
           end
 
-          if @config['cross_zone_unstickiness'] 
-            MU.log "Enabling cross-zone un-stickiness on #{lb.dns_name}"
             if @config['classic']
+              if @config['cross_zone_unstickiness'] 
+              MU.log "Enabling cross-zone un-stickiness on #{lb.dns_name}"
               MU::Cloud::AWS.elb.modify_load_balancer_attributes(
                 load_balancer_name: @mu_name,
                 load_balancer_attributes: {
@@ -288,18 +288,6 @@ module MU
                   }
                 }
               )
-            else
-              @targetgroups.each_pair { |tg_name, tg|
-                MU::Cloud::AWS.elb2.modify_target_group_attributes(
-                  target_group_arn: tg.target_group_arn,
-                  attributes: [
-                    {
-                      key: "stickiness.enabled",
-                      value: "true"
-                    }
-                  ]
-                )
-              }
             end
           end
 
