@@ -219,7 +219,7 @@ projects[drupal][patch][1697570] = http://drupal.org/files/drupal7.menu-system.1
       end
       first_admin = nil
       node['deployment']['admins'].each_value { |admin|
-        if !node['application_attributes']has_key?('drupal_pws')
+        if !node['application_attributes'].has_key?('drupal_pws')
           node.normal['application_attributes']['drupal_pws'] = Hash.new
           node.save
         end

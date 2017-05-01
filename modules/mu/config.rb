@@ -1868,7 +1868,7 @@ module MU
                   else
                     found = false
                     lb['targetgroups'].each { |tg|
-                      if l['targetgroup'] == action['targetgroup']
+                      if tg['name'] == action['targetgroup']
                         found = true
                         break
                       end
@@ -4157,25 +4157,31 @@ module MU
     }
 
     @loadbalancer_reference_primitive = {
-        "type" => "array",
-        "minItems" => 1,
-        "items" => {
-            "type" => "object",
-            "minProperties" => 1,
-            "maxProperties" => 1,
-            "additionalProperties" => false,
-            "description" => "One or more Load Balancers with which this instance should register.",
-            "properties" => {
-                "concurrent_load_balancer" => {
-                    "type" => "string",
-                    "description" => "The name of a MU loadbalancer object, which should also defined in this stack. This will be added as a dependency."
-                },
-                "existing_load_balancer" => {
-                    "type" => "string",
-                    "description" => "The DNS name of an existing Elastic Load Balancer. Must be in the same region as this deployment."
-                }
+      "type" => "array",
+      "minItems" => 1,
+      "items" => {
+        "type" => "object",
+        "minProperties" => 1,
+        "additionalProperties" => false,
+        "description" => "One or more Load Balancers with which this instance should register.",
+        "properties" => {
+          "concurrent_load_balancer" => {
+            "type" => "string",
+            "description" => "The name of a MU loadbalancer object, which should also defined in this stack. This will be added as a dependency."
+          },
+          "target_groups" => {
+            "type" => "array",
+            "description" => "A list of ALB target groups to register the instance(s) in",
+            "items" => {
+              "type" => "string"
             }
+          },
+          "existing_load_balancer" => {
+            "type" => "string",
+            "description" => "The DNS name of an existing Elastic Load Balancer. Must be in the same region as this deployment."
+          }
         }
+      }
     }
 
     def self.dns_records_primitive(need_target: true, default_type: nil, need_zone: false)
@@ -5268,7 +5274,7 @@ module MU
             "cross_zone_unstickiness" => {
                 "type" => "boolean",
                 "default" => false,
-                "description" => "Set true to disable Cross-Zone load balancing, which we enable by default: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/how-elb-works.html#request-routing"
+                "description" => "Set to true to enable Cross-Zone load balancing, which is  disabled by default. This only applies to classic ELBs: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/how-elb-works.html#request-routing"
             },
             "idle_timeout" => {
                 "type" => "integer",
@@ -5428,7 +5434,7 @@ module MU
                   "ssl_policy" => {
                     "type" => "string",
                     "description" => "The name of the SSL/TLS policy to apply to an HTTPS listner. eg ELBSecurityPolicy-2015-05, ELBSecurityPolicy-2016-08, ELBSecurityPolicy-TLS-1-2-2017-01, ELBSecurityPolicy-TLS-1-1-2017-01",
-                    "default" => "ELBSecurityPolicy-TLS-1-1-2017-01"
+                    "default" => "ELBSecurityPolicy-TLS-1-2-2017-01"
                   },
                   "ssl_certificate_id" => {
                     "type" => "string",

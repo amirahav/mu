@@ -1284,7 +1284,14 @@ module MU
               raise MuError, "#{@mu_name} is configured to use LoadBalancers, but none have been loaded by dependencies()"
             end
             @loadbalancers.each { |lb|
-              lb.registerNode(@cloud_id)
+              target_groups = []
+              @config['loadbalancers'].each { |cfg_lb|
+                if cfg_lb.has_key?("concurrent_load_balancer")
+                    target_groups = cfg_lb['target_groups'] if cfg_lb.has_key?("target_groups")
+                end
+              }
+
+              lb.registerNode(@cloud_id, targetgroups: target_groups)
             }
           end
 

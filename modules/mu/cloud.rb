@@ -664,8 +664,7 @@ module MU
             @loadbalancers = [] if !@loadbalancers
             @config['loadbalancers'].each { |lb|
               MU.log "Loading LoadBalancer for #{self}", MU::DEBUG, details: lb
-              if @dependencies.has_key?("loadbalancer") and
-                  @dependencies["loadbalancer"].has_key?(lb['concurrent_load_balancer'])
+              if @dependencies.has_key?("loadbalancer") and @dependencies["loadbalancer"].has_key?(lb['concurrent_load_balancer'])
                 @loadbalancers << @dependencies["loadbalancer"][lb['concurrent_load_balancer']]
               else
                 if !lb.has_key?("existing_load_balancer") and

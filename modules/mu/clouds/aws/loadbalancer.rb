@@ -267,7 +267,7 @@ module MU
                   }
                   rule['actions'].each { |action|
                     rule_descriptor[:actions] << {
-                      :target_group_arn => @targetgroups[a['targetgroup']].target_group_arn,
+                      :target_group_arn => @targetgroups[action['targetgroup']].target_group_arn,
                       :type => action['action']
                     }
                   }
@@ -542,6 +542,8 @@ module MU
               end
               targetgroups = @targetgroups.keys
             end
+
+            cloud_desc if @targetgroups.nil?
             targetgroups.each { |tg|
               MU::Cloud::AWS.elb2(@config['region']).register_targets(
                 target_group_arn: @targetgroups[tg].target_group_arn,

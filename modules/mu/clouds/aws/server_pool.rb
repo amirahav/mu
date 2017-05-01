@@ -97,7 +97,11 @@ module MU
                     lbs << deployed_lb["awsname"]
                     if deployed_lb.has_key?("targetgroups")
                       deployed_lb["targetgroups"].each_pair { |tg_name, tg_arn|
-                        tg_arns << tg_arn
+                        if lb.has_key?("target_groups")
+                          tg_arns << tg_arn if lb['target_groups'].include?(tg_name)
+                        else
+                          tg_arns << tg_arn
+                        end
                       }
                     end
                     found = true
