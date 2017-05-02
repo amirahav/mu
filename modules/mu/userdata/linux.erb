@@ -71,10 +71,7 @@ elif [ -x /usr/bin/yum ];then
 		chmod 755 /etc/rc.d/rc.local
 	fi
 	if [ ! -f /usr/bin/curl ] ;then /usr/bin/yum -y install curl;fi
-	# Ugh, rando EPEL mirror
-	if [ ! -f /etc/yum.repos.d/epel.repo ];then
-		/bin/rpm -ivh http://mirror.metrocast.net/fedora/epel/epel-release-latest-$version.noarch.rpm
-	fi
+
 <% if !$mu.skipApplyUpdates %>
 	if [ ! -f /.mu-installer-ran-updates ];then
 		service sshd stop

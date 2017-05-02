@@ -1286,8 +1286,13 @@ module MU
             @loadbalancers.each { |lb|
               target_groups = []
               @config['loadbalancers'].each { |cfg_lb|
-                if cfg_lb.has_key?("concurrent_load_balancer")
-                    target_groups = cfg_lb['target_groups'] if cfg_lb.has_key?("target_groups")
+                if cfg_lb.has_key?("concurrent_load_balancers")
+                  cfg_lb['concurrent_load_balancers'].each { |concurrent_lb|
+                    if lb.config['name'] == concurrent_lb['name']
+                      target_groups = concurrent_lb['target_groups'] if concurrent_lb.has_key?("target_groups")
+                      break
+                    end
+                  }
                 end
               }
 

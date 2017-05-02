@@ -2057,15 +2057,17 @@ module MU
 # TODO make sure any load balancer we ask for has the same VPC configured
         if !pool["loadbalancers"].nil?
           pool["loadbalancers"].each { |lb|
-            if lb["concurrent_load_balancer"] != nil
-              pool["dependencies"] << {
+            if lb["concurrent_load_balancers"]
+              lb["concurrent_load_balancers"].each { |concurrent_lb|
+                pool["dependencies"] << {
                   "type" => "loadbalancer",
-                  "name" => lb["concurrent_load_balancer"]
+                  "name" => concurrent_lb['name']
+                }
               }
             end
           }
         end
-        
+
         if pool.has_key?("storage_pools")
           pool["storage_pools"].each { |sp|
             if sp["name"]
@@ -2923,12 +2925,15 @@ module MU
             end
           }
         end
+
         if !server["loadbalancers"].nil?
           server["loadbalancers"].each { |lb|
-            if lb["concurrent_load_balancer"] != nil
-              server["dependencies"] << {
+            if lb["concurrent_load_balancers"]
+              lb["concurrent_load_balancers"].each { |concurrent_lb|
+                server["dependencies"] << {
                   "type" => "loadbalancer",
-                  "name" => lb["concurrent_load_balancer"]
+                  "name" => concurrent_lb['name']
+                }
               }
             end
           }
@@ -4165,15 +4170,26 @@ module MU
         "additionalProperties" => false,
         "description" => "One or more Load Balancers with which this instance should register.",
         "properties" => {
-          "concurrent_load_balancer" => {
-            "type" => "string",
-            "description" => "The name of a MU loadbalancer object, which should also defined in this stack. This will be added as a dependency."
-          },
-          "target_groups" => {
+          "concurrent_load_balancers" => {
             "type" => "array",
-            "description" => "A list of ALB target groups to register the instance(s) in",
             "items" => {
-              "type" => "string"
+              "type" => "object",
+              "required" => ["name"],
+              "additionalProperties" => false,
+              "description" => "The names of MU loadbalancer objects, and ALB target groups",
+              "properties" => {
+                "name" => {
+                  "type" => "string",
+                  "description" => "The name of a MU loadbalancer object, which should also defined in this stack. This will be added as a dependency."
+                },
+                "target_groups" => {
+                  "type" => "array",
+                  "description" => "A list of ALB target groups to register the instance(s) in",
+                  "items" => {
+                    "type" => "string"
+                  }
+                }
+              }
             }
           },
           "existing_load_balancer" => {
@@ -5584,6 +5600,11 @@ module MU
             "health_check_grace_period" => {
                 "type" => "integer",
                 "default" => 0
+            },
+            "enable_metrics_collection" => {
+                "type" => "boolean",
+                "description" => "Enable or disable statistics collection for the AutoScaling group",
+                "default" => true
             },
             "vpc_zone_identifier" => {
                 "type" => "string",

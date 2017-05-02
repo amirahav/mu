@@ -89,33 +89,37 @@ module MU
                     "awsname" => lb["existing_load_balancer"]
                     # XXX probably have to query API to get the DNS name of this one
                 }
-              elsif lb["concurrent_load_balancer"]
-                raise MuError, "No loadbalancers exist! I need one named #{lb['concurrent_load_balancer']}" if !@deploy.deployment["loadbalancers"]
-                found = false
-                @deploy.deployment["loadbalancers"].each_pair { |lb_name, deployed_lb|
-                  if lb_name == lb['concurrent_load_balancer']
-                    lbs << deployed_lb["awsname"]
-                    if deployed_lb.has_key?("targetgroups")
-                      deployed_lb["targetgroups"].each_pair { |tg_name, tg_arn|
-                        if lb.has_key?("target_groups")
-                          tg_arns << tg_arn if lb['target_groups'].include?(tg_name)
-                        else
-                          tg_arns << tg_arn
-                        end
-                      }
+              elsif lb["concurrent_load_balancers"]
+                lb["concurrent_load_balancers"].each { |concurrent_lb|
+                  raise MuError, "No loadbalancers exist! I need one named #{concurrent_lb['name']}" if !@deploy.deployment["loadbalancers"]
+                  found = false
+                  @deploy.deployment["loadbalancers"].each_pair { |lb_name, deployed_lb|
+                    if lb_name == concurrent_lb['name']
+                      lbs << deployed_lb["awsname"]
+                      if deployed_lb.has_key?("targetgroups")
+                        deployed_lb["targetgroups"].each_pair { |tg_name, tg_arn|
+                          if concurrent_lb.has_key?("target_groups")
+                            tg_arns << tg_arn if concurrent_lb['target_groups'].include?(tg_name)
+                          else
+                            tg_arns << tg_arn
+                          end
+                        }
+                      end
+                      found = true
                     end
-                    found = true
-                  end
+                  }
+                  raise MuError, "I need a loadbalancer named #{concurrent_lb['name']}, but none seems to have been created!" if !found
                 }
-                raise MuError, "I need a loadbalancer named #{lb['concurrent_load_balancer']}, but none seems to have been created!" if !found
               end
             }
+
             if tg_arns.size > 0
               asg_options[:target_group_arns] = tg_arns
             else
               asg_options[:load_balancer_names] = lbs
             end
           end
+
           asg_options[:termination_policies] = @config["termination_policies"] if @config["termination_policies"]
           asg_options[:desired_capacity] = @config["desired_capacity"] if @config["desired_capacity"]
 
@@ -330,6 +334,13 @@ module MU
               MU.log e.message, MU::ERR, details: asg_options
               raise MuError, "#{e.message} creating AutoScale group #{@mu_name}"
             end
+          end
+
+          if @config['enable_metrics_collection']
+            MU::Cloud::AWS.autoscale.enable_metrics_collection(
+              auto_scaling_group_name: @mu_name,
+              granularity: "1Minute"
+            )
           end
 
           if zones_to_try != nil and zones_to_try.size < @config["zones"].size
