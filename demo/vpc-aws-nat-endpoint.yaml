@@ -1,6 +1,6 @@
 <%
   $region = MU.curRegion unless $region
-  $vpc_cidr = "10.27.0.0/16" if !$vpc_cidr
+  $vpc_cidr = "10.23.0.0/16" if !$vpc_cidr
   $azs = MU::Cloud::AWS.listAZs
 %>
 
@@ -10,6 +10,7 @@ vpcs:
 - name: vpc
   ip_block: <%= $vpc_cidr %>
   enable_traffic_logging: true
+  nat_gateway_multi_az: true
   create_nat_gateway: true
   endpoint: com.amazonaws.<%= $region %>.s3
   peers:
@@ -20,10 +21,16 @@ vpcs:
     routes:
     - destination_network: 0.0.0.0/0
       gateway: #INTERNET
-  - name: private
+<%
+$azs.each.with_index { |az, i|
+%>
+  - name: private<%= i %>
     routes:
     - destination_network: 0.0.0.0/0
       gateway: '#NAT'
+<%
+}
+%>
   subnets:
 <%
 $azs.each.with_index { |az, i|
@@ -40,28 +47,7 @@ $azs.each.with_index { |az, i|
   - name: Private<%= i %>
     ip_block: <%= $vpc_cidr.split('.')[0..1].join('.') %>.<%= i + $azs.size %>.0/24
     availability-zone: <%= az %>
-    route-table: private
+    route-table: private<%= i %>
 <%
 }
 %>
-loadbalancers:
-- name: testlb
-  dns_sync_wait: false
-  vpc:
-    subnet_pref: all_public
-    vpc_name: vpc
-  cross_zone_unstickiness: true
-  dependencies:
-  - type: vpc
-    name: vpc
-  healthcheck:
-    target: HTTP:80/
-    timeout: 5
-    interval: 30
-    unhealthy-threshold: 2
-    healthy-threshold: 2
-  listeners:
-  - lb-port: 80
-    lb-protocol: HTTP
-    instance-port: 80
-    instance-protocol: HTTP
