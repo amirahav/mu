@@ -2057,7 +2057,14 @@ module MU
 # TODO make sure any load balancer we ask for has the same VPC configured
         if !pool["loadbalancers"].nil?
           pool["loadbalancers"].each { |lb|
-            if lb["concurrent_load_balancers"]
+            if lb["concurrent_load_balancer"]
+              MU.log "'concurrent_load_balancer' is deprecated, please use 'concurrent_load_balancers' instead", MU::WARN
+
+              pool["dependencies"] << {
+                "type" => "loadbalancer",
+                "name" => lb["concurrent_load_balancer"]
+              }
+            elsif lb["concurrent_load_balancers"]
               lb["concurrent_load_balancers"].each { |concurrent_lb|
                 pool["dependencies"] << {
                   "type" => "loadbalancer",
@@ -2928,7 +2935,14 @@ module MU
 
         if !server["loadbalancers"].nil?
           server["loadbalancers"].each { |lb|
-            if lb["concurrent_load_balancers"]
+            if lb["concurrent_load_balancer"]
+              MU.log "'concurrent_load_balancer' is deprecated, please use 'concurrent_load_balancers' instead", MU::WARN
+
+              server["dependencies"] << {
+                  "type" => "loadbalancer",
+                  "name" => lb["concurrent_load_balancer"]
+              }
+            elsif lb["concurrent_load_balancers"]
               lb["concurrent_load_balancers"].each { |concurrent_lb|
                 server["dependencies"] << {
                   "type" => "loadbalancer",
@@ -3512,6 +3526,11 @@ module MU
             "enable_dns_hostnames" => {
                 "type" => "boolean",
                 "default" => true
+            },
+            "cross_vpc_dns" => {
+                "type" => "boolean",
+                "default" => true,
+                "description" => "When peering VPCs, will resolve the DNS name of the remote VPC to the private IP of the resource"
             },
             "nat_gateway_multi_az" => {
               "type" => "boolean",
@@ -4191,6 +4210,10 @@ module MU
                 }
               }
             }
+          },
+          "concurrent_load_balancer" => {
+              "type" => "string",
+              "description" => "The name of a MU loadbalancer object, which should also defined in this stack. This will be added as a dependency. This is deprecated, concurrent_load_balancers should be used instead"
           },
           "existing_load_balancer" => {
             "type" => "string",

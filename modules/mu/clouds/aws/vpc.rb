@@ -627,6 +627,16 @@ module MU
                 }
               end
 
+              resp = MU::Cloud::AWS.ec2(@config['region']).modify_vpc_peering_connection_options(
+                vpc_peering_connection_id: peering_id,
+                requester_peering_connection_options: {
+                  allow_dns_resolution_from_remote_vpc: @config['cross_vpc_dns'],
+                },
+                accepter_peering_connection_options: {
+                  allow_dns_resolution_from_remote_vpc: @config['cross_vpc_dns'],
+                }
+              )
+
               # Create routes to our new friend.
               MU::Cloud::AWS::VPC.listAllSubnetRouteTables(@config['vpc_id'], region: @config['region']).each { |rtb_id|
                 my_route_config = {

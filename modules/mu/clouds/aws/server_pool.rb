@@ -111,6 +111,25 @@ module MU
                   raise MuError, "I need a loadbalancer named #{concurrent_lb['name']}, but none seems to have been created!" if !found
                 }
               end
+
+              if lb["concurrent_load_balancer"]
+                raise MuError, "No loadbalancers exist! I need one named #{lb['concurrent_load_balancer']}" if !@deploy.deployment["loadbalancers"]
+                MU.log "'concurrent_load_balancer' is deprecated, please use 'concurrent_load_balancers' instead", MU::WARN
+
+                found = false
+                @deploy.deployment["loadbalancers"].each_pair { |lb_name, deployed_lb|
+                  if lb_name == lb['concurrent_load_balancer']
+                    lbs << deployed_lb["awsname"]
+                    if deployed_lb.has_key?("targetgroups")
+                      deployed_lb["targetgroups"].each_pair { |tg_name, tg_arn|
+                        tg_arns << tg_arn
+                      }
+                    end
+                    found = true
+                  end
+                }
+                raise MuError, "I need a loadbalancer named #{lb['concurrent_load_balancer']}, but none seems to have been created!" if !found
+              end
             }
 
             if tg_arns.size > 0

@@ -685,17 +685,30 @@ module MU
                     @loadbalancers << lbs.first if !lbs.nil? and lbs.size > 0
                   end
                 }
-              else
-                lbs = MU::MommaCat.findStray(
-                    @config['cloud'],
-                    "loadbalancer",
-                    deploy_id: lb["deploy_id"],
-                    cloud_id: lb['existing_load_balancer'],
-                    region: @config["region"],
-                    calling_deploy: @deploy,
-                    dummy_ok: true
-                )
-                @loadbalancers << lbs.first if !lbs.nil? and lbs.size > 0
+              end
+
+              if lb.has_key?('concurrent_load_balancer')
+                MU.log "'concurrent_load_balancer' is deprecated, please use 'concurrent_load_balancers' instead", MU::WARN
+                MU.log "Loading LoadBalancer for #{self}", MU::DEBUG, details: lb
+                if @dependencies.has_key?("loadbalancer") and @dependencies["loadbalancer"].has_key?(lb['concurrent_load_balancer'])
+                  @loadbalancers << @dependencies["loadbalancer"][lb['concurrent_load_balancer']]
+                else
+                  if !lb.has_key?("existing_load_balancer") and
+                      !lb.has_key?("deploy_id") and !@deploy.nil?
+                    lb["deploy_id"] = @deploy.deploy_id
+                  end
+                  lbs = MU::MommaCat.findStray(
+                      @config['cloud'],
+                      "loadbalancer",
+                      deploy_id: lb["deploy_id"],
+                      cloud_id: lb['existing_load_balancer'],
+                      name: lb['concurrent_load_balancer'],
+                      region: @config["region"],
+                      calling_deploy: @deploy,
+                      dummy_ok: true
+                  )
+                  @loadbalancers << lbs.first if !lbs.nil? and lbs.size > 0
+                end
               end
             }
           end
