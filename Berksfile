@@ -13,6 +13,7 @@ siteCookbookPath = "#{ENV['MU_COOKBOOK_ROOT']}/site_cookbooks"
 
 source "https://supermarket.chef.io"
 
+cookbook 'awscli', path: "#{cookbookPath}/awscli"
 cookbook 'mu-splunk', path: "#{cookbookPath}/mu-splunk"
 cookbook 'mu-activedirectory', path: "#{cookbookPath}/mu-activedirectory"
 cookbook 'mu-demo', path: "#{cookbookPath}/mu-demo"

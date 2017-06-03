@@ -1,4 +1,6 @@
 DEPENDENCIES
+  awscli
+    path: cookbooks/awscli
   mu-activedirectory
     path: cookbooks/mu-activedirectory
   mu-demo
@@ -39,6 +41,7 @@ DEPENDENCIES
 GRAPH
   apache2 (3.3.0)
   apt (6.1.0)
+  awscli (0.2.1)
   bind (1.3.0)
   bind9-ng (0.1.0)
   bluepill (4.0.1)
