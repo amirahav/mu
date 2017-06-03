@@ -17,11 +17,11 @@
 # limitations under the License.
 
 if !node['application_attributes']['skip_recipes'].include?('set_mu_hostname')
-  $hostname = node.name
+  hostname = node.name
   if !node['ad']['computer_name'].nil? and !node['ad']['computer_name'].empty?
-    $hostname = node['ad']['computer_name']
+    hostname = node['ad']['computer_name']
   end rescue NoMethodError
-  $ipaddress = node['ipaddress']
+  ipaddress = node['ipaddress']
 
   if !platform_family?("windows")
     sibs=get_sibling_nodes(node)
@@ -29,8 +29,8 @@ if !node['application_attributes']['skip_recipes'].include?('set_mu_hostname')
     template "/etc/hosts" do
       source "etc_hosts.erb"
       variables(
-        hostname: $hostname,
-        ipaddress: $ipaddress,
+        hostname: hostname,
+        ipaddress: ipaddress,
         nodes: sibs
       )
     end
@@ -42,7 +42,7 @@ if !node['application_attributes']['skip_recipes'].include?('set_mu_hostname')
         source "etc_sysconfig_network.erb"
         notifies :run, "execute[set hostname]", :immediately if elversion != 7
         variables(
-          hostname: $hostname,
+          hostname: hostname,
           platform: node['platform']
         )
       end
@@ -52,28 +52,28 @@ if !node['application_attributes']['skip_recipes'].include?('set_mu_hostname')
           not_if "grep 'preserve_hostname: true' /etc/cloud/cloud.cfg"
         end
 
-        execute "hostnamectl set-hostname #{$hostname} --static && systemctl restart systemd-hostnamed" do
-          # not_if "hostnamectl | grep Static | grep #{$hostname.downcase}"
-          not_if "grep #{$hostname} /etc/hostname"
+        execute "hostnamectl set-hostname #{hostname} --static && systemctl restart systemd-hostnamed" do
+          # not_if "hostnamectl | grep Static | grep #{hostname.downcase}"
+          not_if "grep #{hostname} /etc/hostname"
         end
 
         file "/etc/hostname" do
-          content $hostname
+          content hostname
         end
       else
         execute "set hostname" do
-          command "hostname #{$hostname}"
-          not_if "test \"`hostname`\" = \"#{$hostname}\" "
+          command "hostname #{hostname}"
+          not_if "test \"`hostname`\" = \"#{hostname}\" "
         end
       end
     when "ubuntu"
       execute "set hostname" do
-        command "hostname #{$hostname}"
-        not_if "test \"`hostname`\" = \"#{$hostname}\" "
+        command "hostname #{hostname}"
+        not_if "test \"`hostname`\" = \"#{hostname}\" "
       end
 
       file "/etc/hostname" do
-        content $hostname
+        content hostname
       end
     else
       Chef::Log.info("Unsupported platform #{node['platform']}")

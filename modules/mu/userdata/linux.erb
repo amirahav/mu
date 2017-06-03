@@ -129,7 +129,7 @@ if [ ! -f /opt/chef/embedded/bin/ruby ];then
 	set +e
 	# We may run afoul of a synchronous bootstrap process doing the same thing. So
 	# wait until we've managed to run successfully.
-	while ! sh chef-install.sh -v <%= MU.chefVersion %>;do
+	while ! sh chef-install.sh -v <%= $mu.groomer_version %>;do
 		sleep 10
 	done
 	touch /opt/mu_installed_chef

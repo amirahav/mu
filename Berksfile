@@ -26,7 +26,7 @@ cookbook 'mu-php54', path: "#{cookbookPath}/mu-php54"
 cookbook 'mu-tools', path: "#{cookbookPath}/mu-tools"
 cookbook 'mu-utility', path: "#{cookbookPath}/mu-utility"
 cookbook 'mysql-chef_gem', path: "#{cookbookPath}/mysql-chef_gem"
-cookbook 'nagios', git: 'https://github.com/schubergphilis/nagios.git', ref: '9c470edcdcc9b4f1715e4bf6ad453f6c67cb90cd'
+cookbook 'nagios', git: 'https://github.com/schubergphilis/nagios.git', ref: '9c470ed'
 cookbook 'nginx-passenger', path: "#{cookbookPath}/nginx-passenger"
 cookbook 'python', path: "#{cookbookPath}/python"
 cookbook 's3fs', path: "#{cookbookPath}/s3fs"

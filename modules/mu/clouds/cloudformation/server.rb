@@ -53,7 +53,8 @@ module MU
               "skipApplyUpdates" => @config['skipinitialupdates'],
               "windowsAdminName" => @config['windows_admin_username'],
               "resourceName" => @config["name"],
-              "resourceType" => "server"
+              "resourceType" => "server",
+              "groomer_version" => @config['groomer_version']
             },
             custom_append: @config['userdata_script'],
             scrub_mu_isms: @config['scrub_mu_isms']

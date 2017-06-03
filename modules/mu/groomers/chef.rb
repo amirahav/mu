@@ -390,13 +390,12 @@ module MU
         if !@server.windows?
           kb = ::Chef::Knife::Bootstrap.new([canonical_addr])
           kb.config[:use_sudo] = true
-          kb.config[:distro] = 'chef-full'
         else
           kb = ::Chef::Knife::BootstrapWindowsSsh.new([canonical_addr])
           kb.config[:cygwin] = true
           # kb.config[:distro] = 'windows-chef-client-msi'
           #Trying to solve random createprocess errors - knife-windows always installs 32bit and architecture/bootstrap_architecture don't seem to work
-          kb.config[:msi_url] = "https://www.chef.io/chef/download?p=windows&pv=2012&m=x86_64&v=#{MU.chefVersion}"
+          kb.config[:msi_url] = "https://www.chef.io/chef/download?p=windows&pv=2012&m=x86_64&v=#{@config['groomer_version']}"
           # kb.config[:node_ssl_verify_mode] = 'none'
           # kb.config[:node_verify_api_cert] = false
         end
@@ -417,7 +416,7 @@ module MU
         kb.config[:forward_agent] = ssh_user
         kb.name_args = "#{canonical_addr}"
         kb.config[:chef_node_name] = @server.mu_name
-        kb.config[:bootstrap_version] = MU.chefVersion
+        ::Chef::Config[:knife][:bootstrap_version] = @config['groomer_version']
         # XXX key off of MU verbosity level
         kb.config[:log_level] = :debug
         kb.config[:identity_file] = "#{Etc.getpwuid(Process.uid).dir}/.ssh/#{ssh_key_name}"

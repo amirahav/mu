@@ -194,7 +194,7 @@
       $install_chef = $false
       $my_chef = (Get-ItemProperty $location | Where-Object {$_.DisplayName -like "chef client*"}).DisplayName
       if ($my_chef) {
-        if ($my_chef -match '<%= MU.chefVersion %>'.split('-')[0]) {
+        if ($my_chef -match '<%= $mu.groomer_version %>'.split('-')[0]) {
           $install_chef = $false
         } else{
           log "Uninstalling Chef"
@@ -225,12 +225,12 @@
 
     If ($install_chef){
       log "Installing Chef"
-      If (!(Test-Path $env:Temp/chef-installer-<%= MU.chefVersion %>.msi)){
+      If (!(Test-Path $env:Temp/chef-installer-<%= $mu.groomer_version %>.msi)){
         log "Downloading Chef installer"
-        $WebClient.DownloadFile("https://www.chef.io/chef/download?p=windows&pv=2012&m=x86_64&v=<%= MU.chefVersion %>","$env:Temp/chef-installer-<%= MU.chefVersion %>.msi")
+        $WebClient.DownloadFile("https://www.chef.io/chef/download?p=windows&pv=2012&m=x86_64&v=<%= $mu.groomer_version %>","$env:Temp/chef-installer-<%= $mu.groomer_version %>.msi")
       }
       log "Running Chef installer"
-      (Start-Process -FilePath msiexec -ArgumentList "/i $env:Temp\chef-installer-<%= MU.chefVersion %>.msi ALLUSERS=1 /le $env:Temp\chef-client-install.log /qn" -Wait -Passthru).ExitCode
+      (Start-Process -FilePath msiexec -ArgumentList "/i $env:Temp\chef-installer-<%= $mu.groomer_version %>.msi ALLUSERS=1 /le $env:Temp\chef-client-install.log /qn" -Wait -Passthru).ExitCode
       Set-Content "c:/mu_installed_chef" "yup"
     }
 

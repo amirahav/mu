@@ -1907,6 +1907,12 @@ module MU
         pool["#MU_CLOUDCLASS"] = Object.const_get("MU").const_get("Cloud").const_get("ServerPool")
         pool["#MU_GROOMER"] = MU::Groomer.loadGroomer(pool['groomer'])
         pool['skipinitialupdates'] = true if @skipinitialupdates
+
+        if pool['groomer_version'] != 'latest' && !(pool['groomer_version'].start_with?('12') || pool['groomer_version'].start_with?('13'))
+          ok = false
+          MU.log "Groomer version #{pool['groomer_version']} is invalid", MU::ERR
+        end
+
         if pool["basis"]["server"] != nil
           pool["dependencies"] << {"type" => "server", "name" => pool["basis"]["server"]}
         end
@@ -2769,6 +2775,12 @@ module MU
         server['scrub_mu_isms'] = config['scrub_mu_isms'] if config.has_key?('scrub_mu_isms')
         server['region'] = config['region'] if server['region'].nil?
         server["dependencies"] = Array.new if server["dependencies"].nil?
+
+        if server['groomer_version'] != 'latest' && !(server['groomer_version'].start_with?('12') || server['groomer_version'].start_with?('13'))
+          ok = false
+          MU.log "Groomer version #{server['groomer_version']} is invalid", MU::ERR
+        end
+
         if !server['generate_iam_role']
           if !server['iam_role'] and server['cloud'] != "CloudFormation"
             MU.log "Must set iam_role if generate_iam_role set to false", MU::ERR
@@ -4498,6 +4510,11 @@ module MU
             "type" => "string",
             "default" => MU::Config.defaultGroomer,
             "enum" => MU.supportedGroomers
+        },
+        "groomer_version" => {
+            "type" => "string",
+            "default" => '12',
+            "description" => "Choose the version of the groomer (Chef) to bootstrap with. Accepts the major version of the groomer (eg 12 or 13), 'latest' or the full version to use (eg 12.17.44)"
         },
         "tags" => @tags_primitive,
         "optional_tags" => {

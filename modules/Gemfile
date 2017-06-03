@@ -15,12 +15,12 @@
 source "https://rubygems.org"
 gem 'yard'
 gem 'ruby-graphviz', "~> 1.2.3"
-gem 'chef', "~> 13.0.118"
-gem "aws-sdk-core", "~> 2.9.14"
+gem 'chef', "~> 12.20.3"
+gem "aws-sdk-core", "~> 2.9.29"
 gem 'simple-password-gen'
 gem 'trollop', "~> 2.1.2"
 gem 'knife-windows', '1.8.0'
-gem 'fileutils'
+#gem 'fileutils'
 gem 'json-schema'
 gem 'colorize'
 gem 'color'
@@ -33,5 +33,5 @@ gem 'ruby-wmi'
 gem 'chef-vault', "~> 3.0.3"
 gem 'net-ssh', "~> 4.1.0"
 gem 'netaddr'
-gem 'nokogiri', "~> 1.7.1"
+gem 'nokogiri', "~> 1.7.2"
 gem 'net-ldap', "~> 0.15.0"
