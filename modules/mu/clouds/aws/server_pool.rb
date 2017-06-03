@@ -246,7 +246,8 @@ module MU
                   "windowsAdminName" => @config['windows_admin_username'],
                   "resourceName" => @config["name"],
                   "resourceType" => "server_pool",
-                  "platform" => @config["platform"]
+                  "platform" => @config["platform"],
+                  "groomer_version" => @config['groomer_version']
                 },
                 custom_append: @config['userdata_script']
               )
