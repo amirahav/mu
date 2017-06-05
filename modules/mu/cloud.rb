@@ -688,7 +688,6 @@ module MU
               end
 
               if lb.has_key?('concurrent_load_balancer')
-                MU.log "'concurrent_load_balancer' is deprecated, please use 'concurrent_load_balancers' instead", MU::WARN
                 MU.log "Loading LoadBalancer for #{self}", MU::DEBUG, details: lb
                 if @dependencies.has_key?("loadbalancer") and @dependencies["loadbalancer"].has_key?(lb['concurrent_load_balancer'])
                   @loadbalancers << @dependencies["loadbalancer"][lb['concurrent_load_balancer']]

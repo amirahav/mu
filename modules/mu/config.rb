@@ -4516,6 +4516,11 @@ module MU
             "default" => '12',
             "description" => "Choose the version of the groomer (Chef) to bootstrap with. Accepts the major version of the groomer (eg 12 or 13), 'latest' or the full version to use (eg 12.17.44)"
         },
+        "skip_default_recipes" => {
+            "type" => "boolean",
+            "default" => false,
+            "description" => "Will skip all the default recipes added by default. Will not add the mu-node role during bootstrap"
+        },
         "tags" => @tags_primitive,
         "optional_tags" => {
             "type" => "boolean",

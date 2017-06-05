@@ -373,7 +373,12 @@ module MU
         nat_ssh_key, nat_ssh_user, nat_ssh_host, canonical_addr, ssh_user, ssh_key_name = @server.getSSHConfig
         MU.log "Bootstrapping #{@server.mu_name} (#{canonical_addr}) with knife"
 
-        run_list = ["recipe[mu-tools::newclient]"]
+        run_list =
+          if @config['skip_default_recipes']
+            []
+          else
+            ["recipe[mu-tools::newclient]"]
+          end
 
         json_attribs = {}
         if !@config['application_attributes'].nil?
@@ -454,14 +459,17 @@ module MU
 
         # Now that we're done, remove one-shot bootstrap recipes from the
         # node's final run list
-        ["mu-tools::newclient"].each { |recipe|
-          begin
-            ::Chef::Knife.run(['node', 'run_list', 'remove', @server.mu_name, "recipe[#{recipe}]"], {})
-          rescue SystemExit => e
-            MU.log "#{@server.mu_name}: Run list removal of recipe[#{recipe}] failed with #{e.inspect}", MU::WARN
-          end
-        }
-        knifeAddToRunList("role[mu-node]")
+        if run_list.include?('recipe[mu-tools::newclient]')
+          ["mu-tools::newclient"].each { |recipe|
+            begin
+              ::Chef::Knife.run(['node', 'run_list', 'remove', @server.mu_name, "recipe[#{recipe}]"], {})
+            rescue SystemExit => e
+              MU.log "#{@server.mu_name}: Run list removal of recipe[#{recipe}] failed with #{e.inspect}", MU::WARN
+            end
+          }
+        end
+
+        knifeAddToRunList("role[mu-node]") unless @config['skip_default_recipes']
 
         splunkVaultInit
         grantSecretAccess(@server.mu_name, "windows_credentials") if @server.windows?

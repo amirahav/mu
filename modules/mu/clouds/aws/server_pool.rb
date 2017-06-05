@@ -114,7 +114,6 @@ module MU
 
               if lb["concurrent_load_balancer"]
                 raise MuError, "No loadbalancers exist! I need one named #{lb['concurrent_load_balancer']}" if !@deploy.deployment["loadbalancers"]
-                MU.log "'concurrent_load_balancer' is deprecated, please use 'concurrent_load_balancers' instead", MU::WARN
 
                 found = false
                 @deploy.deployment["loadbalancers"].each_pair { |lb_name, deployed_lb|

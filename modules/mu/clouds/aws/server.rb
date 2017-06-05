@@ -238,7 +238,6 @@ module MU
             @config.delete("instance_secret")
 
             if !@config['async_groom']
-              sleep 5
               MU::MommaCat.lock(instance.instance_id+"-create")
               if !postBoot
                 MU.log "#{@config['name']} is already being groomed, skipping", MU::NOTICE
@@ -697,12 +696,12 @@ module MU
               if !instance.nil? and instance.state.name == "terminated"
                 raise MuError, "#{@cloud_id} appears to have been terminated mid-bootstrap!"
               end
-              if retries % 3 == 0
+              if retries % 9 == 0
                 MU.log "Waiting for EC2 instance #{node} to be ready...", MU::NOTICE
               end
-              sleep 5
               # Get a fresh AWS descriptor
               instance = MU::Cloud::Server.find(cloud_id: @cloud_id, region: @config['region']).values.first
+              sleep 5
             end
           rescue Aws::EC2::Errors::ServiceError => e
             if retries < 160
@@ -1699,7 +1698,7 @@ module MU
 
           begin
             begin
-              sleep 5
+              sleep 2
               resp = MU::Cloud::AWS.ec2(region).describe_addresses(
                   filters: filters
               )
