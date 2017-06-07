@@ -283,6 +283,7 @@ def updateUserdata(deploys = MU::MommaCat.listDeploys, nodes = [])
           ).launch_configurations.first
 
           olduserdata = Base64.decode64(launch.user_data)
+          groomer_version = server.has_key?('groomer_version') ? server['groomer_version'] : '12'
 
           userdata = MU::Cloud::AWS::Server.fetchUserdata(
               platform: server["platform"],
@@ -294,7 +295,8 @@ def updateUserdata(deploys = MU::MommaCat.listDeploys, nodes = [])
                   "publicIP" => MU.mu_public_ip,
                   "resourceName" => svr_class,
                   "skipApplyUpdates" => server['skipinitialupdates'],
-                  "resourceType" => "server_pool"
+                  "resourceType" => "server_pool",
+                  "groomer_version" => groomer_version
               },
               custom_append: server['userdata_script']
           )
@@ -416,6 +418,8 @@ def updateUserdata(deploys = MU::MommaCat.listDeploys, nodes = [])
                                 attribute: "userData"
                               ).user_data.value)
 
+      groomer_version = server['conf'].has_key?('groomer_version') ? server['conf']['groomer_version'] : '12'
+
       userdata = MU::Cloud::AWS::Server.fetchUserdata(
           platform: server['conf']["platform"],
           template_variables: {
@@ -426,7 +430,8 @@ def updateUserdata(deploys = MU::MommaCat.listDeploys, nodes = [])
               "publicIP" => MU.mu_public_ip,
               "resourceName" => server['conf']['name'],
               "skipApplyUpdates" => server['conf']['skipinitialupdates'],
-              "resourceType" => mytype
+              "resourceType" => mytype,
+              "groomer_version" => groomer_version
           },
           custom_append: server['userdata_script']
       )
