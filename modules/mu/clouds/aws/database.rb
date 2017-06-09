@@ -304,6 +304,10 @@ module MU
               config[:master_username] = @config['master_user']
               config[:master_user_password] = @config['password']
               config[:vpc_security_group_ids] = @config["vpc_security_group_ids"]
+              if @config['enhanced_monitoring_interval'] > 0
+                config[:monitoring_interval] = @config['enhanced_monitoring_interval']
+                config[:monitoring_role_arn] = create_enhanced_monitoring_iam_role.arn
+              end
             end
 
             config[:engine_version] = @config["engine_version"]
@@ -416,6 +420,10 @@ module MU
             mod_config = Hash.new
             mod_config[:vpc_security_group_ids] = vpc_sg_ids
             mod_config[:db_instance_identifier] = @config["identifier"]
+            if @config['enhanced_monitoring_interval'] > 0
+              mod_config[:monitoring_interval] = @config['enhanced_monitoring_interval']
+              mod_config[:monitoring_role_arn] = create_enhanced_monitoring_iam_role.arn
+            end
             MU::Cloud::AWS.rds(@config['region']).modify_db_instance(mod_config)
             MU.log "Modified database #{@config['identifier']} with new security groups: #{mod_config}", MU::NOTICE
           end
@@ -432,6 +440,10 @@ module MU
               mod_config[:db_parameter_group_name] = @config["parameter_group_name"] if @config["parameter_group_name"]
               mod_config[:master_user_password] = @config['password']
               mod_config[:allocated_storage] = @config["storage"] if @config["storage"]
+            end
+            if @config['enhanced_monitoring_interval'] > 0
+              mod_config[:monitoring_interval] = @config['enhanced_monitoring_interval']
+              mod_config[:monitoring_role_arn] = create_enhanced_monitoring_iam_role.arn
             end
             mod_config[:db_instance_identifier] = database.db_instance_identifier
             mod_config[:preferred_maintenance_window] = @config["preferred_maintenance_window"] if @config["preferred_maintenance_window"]
@@ -450,7 +462,7 @@ module MU
                   MU.log "Waiting for RDS database #{@config['identifier'] } to be ready..", MU::NOTICE if attempts % 10 == 0
                 end
                 waiter.before_wait do |attempts, resp|
-                  throw :success if resp.db_instances.first.db_instance_status == "available"
+                  throw :success if %w{backing-up available}.include?(resp.db_instances.first.db_instance_status)
                   throw :failure if Time.now - wait_start_time > 2400
                 end
               end
@@ -572,6 +584,52 @@ module MU
           cluster = MU::Cloud::AWS::Database.getDatabaseClusterById(@config['identifier'], region: @config['region'])
           MU::Cloud::AWS::DNSZone.genericMuDNSEntry(name: cluster.db_cluster_identifier, target: "#{cluster.endpoint}.", cloudclass: MU::Cloud::Database, sync_wait: @config['dns_sync_wait'])
           return cluster.db_cluster_identifier
+        end
+
+        # Create an IAM role to enable database enhanced monitoring.
+        def create_enhanced_monitoring_iam_role
+          resp = MU::Cloud::AWS.iam.create_role(
+            role_name: "#{@mu_name}-DB-MONITORING",
+            assume_role_policy_document: '{"Version": "2012-10-17", "Statement": [{"Sid": "", "Effect": "Allow", "Principal": {"Service": "monitoring.rds.amazonaws.com"}, "Action": "sts:AssumeRole"}]}'
+          )
+
+          policy_document = '{
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Sid": "EnableCreationAndManagementOfRDSCloudwatchLogGroups",
+                      "Effect": "Allow",
+                      "Action": [
+                          "logs:CreateLogGroup",
+                          "logs:PutRetentionPolicy"
+                      ],
+                      "Resource": [
+                          "arn:aws:logs:*:*:log-group:RDS*"
+                      ]
+                  },
+                  {
+                      "Sid": "EnableCreationAndManagementOfRDSCloudwatchLogStreams",
+                      "Effect": "Allow",
+                      "Action": [
+                          "logs:CreateLogStream",
+                          "logs:PutLogEvents",
+                          "logs:DescribeLogStreams",
+                          "logs:GetLogEvents"
+                      ],
+                      "Resource": [
+                          "arn:aws:logs:*:*:log-group:RDS*:log-stream:*"
+                      ]
+                  }
+              ]
+          }'
+
+          MU::Cloud::AWS.iam.put_role_policy(
+            policy_document: policy_document, 
+            policy_name: "ENHANCED_MONITORING", 
+            role_name: "#{@mu_name}-DB-MONITORING" 
+          )
+
+          resp.role
         end
 
         # Create a subnet group for a database.
@@ -1466,6 +1524,7 @@ module MU
 
           groomclass = MU::Groomer.loadGroomer(grommer)
           groomclass.deleteSecret(vault: db_id.upcase) if !noop
+          MU::Cloud::AWS::Server.removeIAMProfile("#{db.db_instance_identifier.upcase}-DB-MONITORING")
           MU.log "#{db_id} has been terminated"
         end
 

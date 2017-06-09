@@ -5077,6 +5077,12 @@ module MU
                 "type" => "boolean",
                 "default" => false
             },
+            "enhanced_monitoring_interval" => {
+                "type" => "integer",
+                "enum" => [0, 1, 5, 10, 15, 30, 60],
+                "description" => "Set the interval, in seconds, in which the cloud provider samples database enhanced monitoring values. set to 0 to disable (default)",
+                "default" => 0
+            },
             "cluster_node_count" => {
               "type" => "integer",
               "description" => "The number of database instances to add to a database cluster. This only applies to aurora",
