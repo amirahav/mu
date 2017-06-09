@@ -390,7 +390,7 @@ module MU
                 MU.log "Waiting for RDS database #{@config['identifier']} to be ready..", MU::NOTICE if attempts % 10 == 0
               end
               waiter.before_wait do |attempts, resp|
-                throw :success if resp.db_instances.first.db_instance_status == "available"
+                throw :success if %w{backing-up available}.include?(resp.db_instances.first.db_instance_status)
                 throw :failure if Time.now - wait_start_time > 3600
               end
             end
