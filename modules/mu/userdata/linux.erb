@@ -56,7 +56,7 @@ elif [ -x /usr/bin/yum ];then
 			version=6
 		fi
 	fi
-	if [ $version == 7 ];then
+	if [ "$version" == 7 ];then
 		userdata_dir="/var/lib/cloud/instances/$instance_id"
 	else
 		userdata_dir="/var/lib/cloud/instance"
@@ -67,7 +67,7 @@ elif [ -x /usr/bin/yum ];then
 
   sed -i 's/^Defaults.*requiretty$/Defaults   !requiretty/' /etc/sudoers
 
-	if [ $version == 7 ];then
+	if [ "$version" == 7 ];then
 		chmod 755 /etc/rc.d/rc.local
 	fi
 	if [ ! -f /usr/bin/curl ] ;then /usr/bin/yum -y install curl;fi
