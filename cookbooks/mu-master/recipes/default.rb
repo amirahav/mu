@@ -463,7 +463,7 @@ if !node['update_nagios_only']
     minute "10"
     hour "6"
     user "root"
-    command "/opt/mu/bin/knife vault rotate all keys --clean-unknown-clients"
+    command "/opt/mu/bin/knife vault rotate all keys"
   end
 
   # This is stuff that can break for no damn reason at all
